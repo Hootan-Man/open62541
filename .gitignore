@@ -81,3 +81,4 @@ Makefile
 /.idea
 /cmake-build*
 /tools/certs/certs/*
+settings.json
