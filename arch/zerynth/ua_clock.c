@@ -1,17 +1,19 @@
 
 #ifdef UA_ARCHITECTURE_ZERYNTH
-
+#include "zerynth.h"
 #include "ua_types.h"
 #include <time.h>
 #include <sys/time.h>
 
 UA_DateTime UA_DateTime_now(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec * UA_DATETIME_SEC) + (tv.tv_usec * UA_DATETIME_USEC) + UA_DATETIME_UNIX_EPOCH;
+    // struct timeval tv;
+    // gettimeofday(&tv, NULL);
+    // return (tv.tv_sec * UA_DATETIME_SEC) +     (tv.tv_usec * UA_DATETIME_USEC)              + UA_DATETIME_UNIX_EPOCH;
+    return (_systime_seconds * UA_DATETIME_SEC) + (_systime_millis * 1000 * UA_DATETIME_USEC) + UA_DATETIME_UNIX_EPOCH;
 }
 
 /* Credit to https://stackoverflow.com/questions/13804095/get-the-time-zone-gmt-offset-in-c */
+// it doesn't seems neccessary at the moment.
 UA_Int64 UA_DateTime_localTimeUtcOffset(void) {
     time_t gmt, rawtime = time(NULL);
     struct tm *ptm;
@@ -37,9 +39,10 @@ UA_DateTime UA_DateTime_nowMonotonic(void) {
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (ts.tv_sec * UA_DATETIME_SEC) + (ts.tv_nsec / 100);
 #else
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    return (ts.tv_sec * UA_DATETIME_SEC) + (ts.tv_nsec / 100);
+    // struct timespec ts;
+    // clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+    // return (ts.tv_sec * UA_DATETIME_SEC) + (ts.tv_nsec / 100);
+    return (_systime_seconds * UA_DATETIME_SEC) + (_systime_millis * 10000);
 #endif
 }
 

@@ -11,34 +11,39 @@
 // ~/.zerynth2/dist/r2.1.2/libs/official/espressif/esp32net/esp32eth.py
 // ~/.zerynth2/dist/r2.1.2/libs/official/espressif/esp32net/esp32wifi.py
 
-#ifdef UA_ARCHITECTURE_ZERYNTH
 
+// here we use VOSAL API
+
+#ifdef UA_ARCHITECTURE_ZERYNTH
+#include <stddef.h>
 #include "zerynth_sockets.h"
 
 #ifndef PLUGINS_ARCH_ZERYNTH_UA_ARCHITECTURE_H_
 #define PLUGINS_ARCH_ZERYNTH_UA_ARCHITECTURE_H_
 
-/* Enable POSIX features */
+// BEGIN OF I DON'T KNOW WHAT TO DO 
+
+/* Enable POSIX features 
 #if !defined(_XOPEN_SOURCE)
 # define _XOPEN_SOURCE 600
 #endif
 #ifndef _DEFAULT_SOURCE
 # define _DEFAULT_SOURCE
 #endif
-/* On older systems we need to define _BSD_SOURCE.
+ On older systems we need to define _BSD_SOURCE.
  * _DEFAULT_SOURCE is an alias for that. */
-#ifndef _BSD_SOURCE
-# define _BSD_SOURCE
-#endif
+// #ifndef _BSD_SOURCE
+// # define _BSD_SOURCE
+// #endif
+// #include <errno.h>
+// #include <arpa/inet.h>
+// #include <netinet/in.h>
+// #include <netdb.h>
+// #include <sys/ioctl.h>
+// #include <sys/select.h>
+// #include <sys/types.h>
+// #include <net/if.h>
 
-#include <errno.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <sys/ioctl.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <net/if.h>
 #ifndef UA_sleep_ms
 # define UA_sleep_ms(X) vosThSleep(TIME_U(X, MILLIS))
 #else /* UA_sleep_ms */
@@ -49,39 +54,43 @@ void UA_sleep_ms(size_t ms);
 
 #define OPTVAL_TYPE int
 
-#include <fcntl.h>
-#include <unistd.h> // read, write, close
+// #include <fcntl.h>
+// #include <unistd.h> // read, write, close
 
-#ifdef __QNX__
-# include <sys/socket.h>
-#endif
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
-# include <sys/param.h>
-# if defined(BSD)
-#  include<sys/socket.h>
-# endif
-#endif
-#if !defined(__CYGWIN__)
-# include <netinet/tcp.h>
-#endif
+// #ifdef __QNX__
+// # include <sys/socket.h>
+// #endif
+// #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+// # include <sys/param.h>
+// # if defined(BSD)
+// #  include<sys/socket.h>
+// # endif
+// #endif
+// #if !defined(__CYGWIN__)
+// # include <netinet/tcp.h>
+// #endif
 
 /* unsigned int for windows and workaround to a glibc bug */
 /* Additionally if GNU_LIBRARY is not defined, it may be using
  * musl libc (e.g. Docker Alpine) */
-#if  defined(__OpenBSD__) || \
-    (defined(__GNU_LIBRARY__) && (__GNU_LIBRARY__ <= 6) && \
-     (__GLIBC__ <= 2) && (__GLIBC_MINOR__ < 16) || \
-    !defined(__GNU_LIBRARY__))
-# define UA_fd_set(fd, fds) FD_SET((unsigned int)fd, fds)
-# define UA_fd_isset(fd, fds) FD_ISSET((unsigned int)fd, fds)
-#else
+// #if  defined(__OpenBSD__) || \
+//     (defined(__GNU_LIBRARY__) && (__GNU_LIBRARY__ <= 6) && \
+//      (__GLIBC__ <= 2) && (__GLIBC_MINOR__ < 16) || \
+//     !defined(__GNU_LIBRARY__))
+// # define UA_fd_set(fd, fds) FD_SET((unsigned int)fd, fds)
+// # define UA_fd_isset(fd, fds) FD_ISSET((unsigned int)fd, fds)
+// #else
 # define UA_fd_set(fd, fds) FD_SET(fd, fds)
 # define UA_fd_isset(fd, fds) FD_ISSET(fd, fds)
-#endif
+// #endif
+
+// END OF I DON'T KNOW
+#include "zerynth_sockets.h"
+
 
 #define UA_access access
 
-#define UA_IPV6 1
+#define UA_IPV6 0
 #define UA_SOCKET int
 #define UA_INVALID_SOCKET -1
 #define UA_ERRNO errno
@@ -93,48 +102,52 @@ void UA_sleep_ms(size_t ms);
 
 #define UA_ENABLE_LOG_COLORS
 
-#define UA_getnameinfo getnameinfo
-#define UA_send gzsocket_send
-#define UA_recv recv
-#define UA_sendto sendto
-#define UA_recvfrom recvfrom
-#define UA_htonl htonl
-#define UA_ntohl ntohl
-#define UA_close close
-#define UA_select select
-#define UA_shutdown shutdown
-#define UA_socket socket
-#define UA_bind bind
-#define UA_listen listen
-#define UA_accept accept
-#define UA_connect connect
-#define UA_getaddrinfo getaddrinfo
+#define UA_getnameinfo getnameinfo // non c'è in z
+#define UA_send zsock_send
+#define UA_recv zsock_recv
+#define UA_sendto zsock_sendto
+#define UA_recvfrom zsock_recvfrom
+#define UA_htonl htonl // non c'è in z
+#define UA_ntohl ntohl // non c'è in z
+#define UA_close zsock_close
+#define UA_select zsock_select
+#define UA_shutdown zsock_shutdown
+#define UA_socket zsock_socket
+#define UA_bind zsock_bind
+#define UA_listen zsock_listen
+#define UA_accept zsock_accept
+#define UA_connect zsock_connect
+#define UA_getaddrinfo zsock_getaddrinfo
 #define UA_getsockopt getsockopt
-#define UA_setsockopt setsockopt
-#define UA_freeaddrinfo freeaddrinfo
-#define UA_gethostname gethostname
-#define UA_inet_pton inet_pton
+#define UA_setsockopt zsock_setsockopt
+#define UA_freeaddrinfo zsock_freeaddrinfo
+#define UA_gethostname gethostname // non c'è in z
+#define UA_inet_pton inet_pton // non c'è in z , è in lwpi
+
 #if UA_IPV6
-# define UA_if_nametoindex if_nametoindex
+# define UA_if_nametoindex if_nametoindex // non c'è
 #endif
 
-#include <stdlib.h>
+// #include <stdlib.h>
 #include "zerynth.h"
 #define UA_free gc_free
 #define UA_malloc gc_malloc
-#define UA_calloc calloc
-#define UA_realloc realloc
+#define UA_calloc gc_calloc // should be implemented
+#define UA_realloc gc_realloc //  should be implemented
 
-#include <stdio.h>
-#define UA_snprintf snprintf
+// #include <stdio.h>
+// #define UA_snprintf snprintf
 
-#define UA_LOG_SOCKET_ERRNO_WRAP(LOG) { \
-    char *errno_str = strerror(errno); \
-    LOG; \
+#include "mini_snprintf.h"
+#define UA_snprintf mini_snprintf
+
+#define UA_LOG_SOCKET_ERRNO_WRAP(LOG) { 
+    char *errno_str = strerror(errno); 
+    LOG; 
 }
-#define UA_LOG_SOCKET_ERRNO_GAI_WRAP(LOG) { \
-    const char *errno_str = gai_strerror(errno); \
-    LOG; \
+#define UA_LOG_SOCKET_ERRNO_GAI_WRAP(LOG) { 
+    const char *errno_str = gai_strerror(errno); 
+    LOG; 
 }
 
 #include "../ua_architecture_functions.h"
